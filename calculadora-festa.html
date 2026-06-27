@@ -2,7 +2,7 @@
 <html lang='pt-BR'>
   <head>
     <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'>
     <title>Calculadora - Festa Junina</title>
     <style>
       * {
@@ -16,6 +16,12 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         padding: 16px;
+        touch-action: manipulation;
+      }
+
+      button,
+      input {
+        touch-action: manipulation;
       }
 
       .container {
@@ -565,6 +571,11 @@
       });
 
       document.getElementById('clearAllBtn').addEventListener('click', clearCart);
+
+      // Evita zoom por toque duplo em alguns navegadores mobile.
+      document.addEventListener('dblclick', (event) => {
+        event.preventDefault();
+      }, { passive: false });
 
       // Initial render
       initializeItems();
