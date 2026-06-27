@@ -458,6 +458,17 @@
         render();
       }
 
+      function removeAllOfItem(itemName) {
+        if (!cart[itemName]) return;
+
+        const item = allItems.find(i => i.name === itemName);
+        const quantity = cart[itemName];
+        total -= item.price * quantity;
+        delete cart[itemName];
+
+        render();
+      }
+
       function clearCart() {
         if (Object.keys(cart).length === 0) return;
         if (confirm('Tem certeza que deseja limpar o pedido?')) {
@@ -496,12 +507,50 @@
             const quantity = cart[item.name] || 0;
             const btn = document.createElement('button');
             btn.className = quantity > 0 ? 'item-btn selected' : 'item-btn';
+            btn.title = 'Toque e segure para zerar este item';
             btn.innerHTML = `
               <span class="item-name">${item.name}</span>
               <span class="item-price">${formatCurrency(item.price)}</span>
               ${quantity > 0 ? `<span class="item-count-badge">${quantity}</span>` : ''}
             `;
-            btn.onclick = () => addItem(item.name);
+
+            let longPressTimer = null;
+            let longPressTriggered = false;
+            const longPressTime = 650;
+
+            const startLongPress = () => {
+              longPressTriggered = false;
+              longPressTimer = setTimeout(() => {
+                if (cart[item.name]) {
+                  longPressTriggered = true;
+                  removeAllOfItem(item.name);
+                }
+              }, longPressTime);
+            };
+
+            const cancelLongPress = () => {
+              if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+              }
+            };
+
+            btn.addEventListener('touchstart', startLongPress, { passive: true });
+            btn.addEventListener('touchend', cancelLongPress);
+            btn.addEventListener('touchcancel', cancelLongPress);
+            btn.addEventListener('mousedown', startLongPress);
+            btn.addEventListener('mouseup', cancelLongPress);
+            btn.addEventListener('mouseleave', cancelLongPress);
+
+            btn.onclick = (event) => {
+              if (longPressTriggered) {
+                event.preventDefault();
+                longPressTriggered = false;
+                return;
+              }
+              addItem(item.name);
+            };
+
             itemsGrid.appendChild(btn);
           });
 
