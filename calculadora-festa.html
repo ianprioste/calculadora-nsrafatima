@@ -19,9 +19,22 @@
         touch-action: manipulation;
       }
 
+      .container,
+      .container * {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+
       button,
       input {
         touch-action: manipulation;
+      }
+
+      #searchInput {
+        -webkit-user-select: text;
+        user-select: text;
+        -webkit-touch-callout: default;
       }
 
       .container {
