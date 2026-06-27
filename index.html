@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang='pt-BR'>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'>
+    <title>Calculadora - Nsra Fátima</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 16px;
+        touch-action: manipulation;
+      }
+
+      .container,
+      .container * {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+
+      button,
+      input {
+        touch-action: manipulation;
+      }
+
+      #searchInput {
+        -webkit-user-select: text;
+        user-select: text;
+        -webkit-touch-callout: default;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 20px;
+      }
+
+      header {
+        grid-column: 1 / -1;
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      h1 {
+        color: #333;
+        font-size: 28px;
+        margin-bottom: 6px;
+      }
+
+      .subtitle {
+        color: #667eea;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .search-box {
+        width: 100%;
+        max-width: 400px;
+        margin: 16px auto 0;
+        display: flex;
+        gap: 8px;
+      }
+
+      #searchInput {
+        flex: 1;
+        padding: 10px 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+      }
+
+      #searchInput:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .categories-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+      }
+
+      .category {
+        margin-bottom: 24px;
+      }
+
+      .category:last-child {
+        margin-bottom: 0;
+      }
+
+      .category-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #667eea;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #667eea;
+      }
+
+      .items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 8px;
+      }
+
+      .item-btn {
+        position: relative;
+        padding: 12px 8px;
+        border: 2px solid #e0e0e0;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 13px;
+        text-align: center;
+        font-weight: 500;
+      }
+
+      .item-btn:hover {
+        background: #f5f5f5;
+        border-color: #667eea;
+        transform: translateY(-2px);
+      }
+
+      .item-btn:active {
+        transform: translateY(0);
+      }
+
+      .item-btn.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+      }
+
+      .item-btn.selected .item-price {
+        color: white;
+        opacity: 0.9;
+      }
+
+      .item-count-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: #e53935;
+        color: white;
+        font-size: 12px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+      }
+
+      .item-name {
+        display: block;
+        margin-bottom: 6px;
+        color: #333;
+      }
+
+      .item-price {
+        font-size: 12px;
+        color: #667eea;
+        font-weight: 600;
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .total-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .total-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        opacity: 0.9;
+        margin-bottom: 8px;
+      }
+
+      .total-value {
+        font-size: 36px;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+      }
+
+      .items-list {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      .items-list-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 12px;
+      }
+
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        gap: 8px;
+      }
+
+      .item-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .item-info {
+        flex: 1;
+      }
+
+      .item-info-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 13px;
+      }
+
+      .item-info-details {
+        font-size: 11px;
+        color: #666;
+        margin-top: 4px;
+      }
+
+      .item-info-price {
+        font-size: 12px;
+        color: #667eea;
+        font-weight: 600;
+        margin-top: 2px;
+      }
+
+      .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .btn-qty {
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background 0.2s;
+        min-width: 28px;
+      }
+
+      .btn-qty:hover {
+        background: #5568d3;
+      }
+
+      .item-quantity {
+        background: white;
+        color: #667eea;
+        border: 1px solid #667eea;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 12px;
+        min-width: 35px;
+        text-align: center;
+      }
+
+      .btn-clear-all {
+        width: 100%;
+        padding: 12px;
+        background: #e53935;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-size: 14px;
+      }
+
+      .btn-clear-all:hover {
+        background: #d32f2f;
+      }
+
+      .empty-message {
+        text-align: center;
+        color: #999;
+        font-size: 13px;
+        padding: 20px;
+      }
+
+      .no-results {
+        text-align: center;
+        color: #999;
+        padding: 32px 16px;
+        font-size: 14px;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          grid-template-columns: 1fr;
+        }
+
+        .items-grid {
+          grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+
+        .item-count-badge {
+          top: -6px;
+          right: -6px;
+        }
+
+        .total-value {
+          font-size: 28px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <header>
+        <h1>Calculadora</h1>
+        <div class="subtitle">Festa Junina - Nsra Fátima</div>
+        <div class="search-box">
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Buscar item..." 
+            aria-label="Buscar item"
+          >
+        </div>
+      </header>
+
+      <div class="categories-section" id="categoriesContainer"></div>
+
+      <aside class="sidebar">
+        <div class="total-box">
+          <div class="total-label">Total</div>
+          <div class="total-value" id="totalValue">R$ 0,00</div>
+        </div>
+
+        <div class="items-list">
+          <div class="items-list-title">Seu Pedido</div>
+          <div id="orderList" class="empty-message">Nenhum item selecionado</div>
+        </div>
+
+        <button class="btn-clear-all" id="clearAllBtn">Limpar Pedido</button>
+      </aside>
+    </div>
+
+    <script>
+      const ITEMS_DATA = {
+        'Carga Inicial': [
+          { name: 'Carga Inicial', price: 5 }
+        ],
+        'Comidas Quentes': [
+          { name: 'Batata Frita', price: 12 },
+          { name: 'Caldo Verde', price: 18 },
+          { name: 'Cachorro Quente', price: 14 },
+          { name: 'Espetinho Carne', price: 18 },
+          { name: 'Espetinho Frango', price: 13 },
+          { name: 'Espetinho Kafta', price: 15 },
+          { name: 'Espetinho Linguiça', price: 15 },
+          { name: 'Guioza', price: 14 },
+          { name: 'Lanche Carne', price: 25 },
+          { name: 'Lanche Linguiça', price: 20 },
+          { name: 'Lanche Pernil', price: 25 },
+          { name: 'Macarronada Domingo', price: 30 },
+          { name: 'Mini Pizza', price: 15 },
+          { name: 'Pastel', price: 14 },
+          { name: 'Pinhão', price: 12 }
+        ],
+        'Doces e Sobremesas': [
+          { name: 'Arroz Doce ou Canjica', price: 12 },
+          { name: 'Brigadeiro Gourmet', price: 5 },
+          { name: 'Caixa Brigadeiro 4 unidades', price: 12 },
+          { name: 'Churros ou Doce de Abóbora', price: 12 },
+          { name: 'Curau ou Bolos', price: 12 },
+          { name: 'Morango com Chocolate', price: 15 }
+        ],
+        'Bebidas': [
+          { name: 'Água', price: 6 },
+          { name: 'Água c/ Gás', price: 7 },
+          { name: 'Café', price: 5 },
+          { name: 'Cerveja ou Vinho Quente', price: 12 },
+          { name: 'Garrafa Vinho', price: 65 },
+          { name: 'Quentão', price: 9 },
+          { name: 'Refrigerante', price: 10 },
+          { name: 'Suco Natural', price: 12 },
+          { name: 'Taça Vinho', price: 18 }
+        ],
+        'Diversão': [
+          { name: 'Bingo Cartela Especial', price: 15 },
+          { name: 'Bingo Cartela Simples', price: 8 },
+          { name: 'Brincaderas', price: 10 }
+        ]
+      };
+
+      let cart = {};
+      let total = 0;
+      let allItems = [];
+
+      // Flatten items for search
+      function initializeItems() {
+        allItems = [];
+        Object.values(ITEMS_DATA).forEach(category => {
+          allItems.push(...category);
+        });
+      }
+
+      function formatCurrency(value) {
+        return 'R$ ' + value.toFixed(2).replace('.', ',');
+      }
+
+      function addItem(itemName) {
+        const item = allItems.find(i => i.name === itemName);
+        if (!item) return;
+
+        if (itemName === 'Carga Inicial') {
+          if (!cart[itemName]) {
+            cart[itemName] = 1;
+            total += item.price;
+          }
+        } else {
+          cart[itemName] = (cart[itemName] || 0) + 1;
+          total += item.price;
+        }
+
+        render();
+      }
+
+      function removeItem(itemName) {
+        if (!cart[itemName]) return;
+
+        const item = allItems.find(i => i.name === itemName);
+        total -= item.price;
+        cart[itemName]--;
+
+        if (cart[itemName] <= 0) {
+          delete cart[itemName];
+        }
+
+        render();
+      }
+
+      function removeAllOfItem(itemName) {
+        if (!cart[itemName]) return;
+
+        const item = allItems.find(i => i.name === itemName);
+        const quantity = cart[itemName];
+        total -= item.price * quantity;
+        delete cart[itemName];
+
+        render();
+      }
+
+      function clearCart() {
+        if (Object.keys(cart).length === 0) return;
+        if (confirm('Tem certeza que deseja limpar o pedido?')) {
+          cart = {};
+          total = 0;
+          render();
+        }
+      }
+
+      function renderCategories(filter = '') {
+        const container = document.getElementById('categoriesContainer');
+        container.innerHTML = '';
+
+        const filterLower = filter.toLowerCase();
+        let hasResults = false;
+
+        Object.entries(ITEMS_DATA).forEach(([categoryName, items]) => {
+          const filteredItems = items.filter(item =>
+            item.name.toLowerCase().includes(filterLower)
+          );
+
+          if (filteredItems.length === 0) return;
+
+          hasResults = true;
+          const categoryDiv = document.createElement('div');
+          categoryDiv.className = 'category';
+
+          const titleDiv = document.createElement('div');
+          titleDiv.className = 'category-title';
+          titleDiv.textContent = categoryName;
+
+          const itemsGrid = document.createElement('div');
+          itemsGrid.className = 'items-grid';
+
+          filteredItems.forEach(item => {
+            const quantity = cart[item.name] || 0;
+            const btn = document.createElement('button');
+            btn.className = quantity > 0 ? 'item-btn selected' : 'item-btn';
+            btn.title = 'Toque e segure para zerar este item';
+            btn.innerHTML = `
+              <span class="item-name">${item.name}</span>
+              <span class="item-price">${formatCurrency(item.price)}</span>
+              ${quantity > 0 ? `<span class="item-count-badge">${quantity}</span>` : ''}
+            `;
+
+            let longPressTimer = null;
+            let longPressTriggered = false;
+            const longPressTime = 650;
+
+            const startLongPress = () => {
+              longPressTriggered = false;
+              longPressTimer = setTimeout(() => {
+                if (cart[item.name]) {
+                  longPressTriggered = true;
+                  removeAllOfItem(item.name);
+                }
+              }, longPressTime);
+            };
+
+            const cancelLongPress = () => {
+              if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+              }
+            };
+
+            btn.addEventListener('touchstart', startLongPress, { passive: true });
+            btn.addEventListener('touchend', cancelLongPress);
+            btn.addEventListener('touchcancel', cancelLongPress);
+            btn.addEventListener('mousedown', startLongPress);
+            btn.addEventListener('mouseup', cancelLongPress);
+            btn.addEventListener('mouseleave', cancelLongPress);
+
+            btn.onclick = (event) => {
+              if (longPressTriggered) {
+                event.preventDefault();
+                longPressTriggered = false;
+                return;
+              }
+              addItem(item.name);
+            };
+
+            itemsGrid.appendChild(btn);
+          });
+
+          categoryDiv.appendChild(titleDiv);
+          categoryDiv.appendChild(itemsGrid);
+          container.appendChild(categoryDiv);
+        });
+
+        if (!hasResults) {
+          const noResults = document.createElement('div');
+          noResults.className = 'no-results';
+          noResults.textContent = 'Nenhum item encontrado';
+          container.appendChild(noResults);
+        }
+      }
+
+      function renderOrderList() {
+        const orderList = document.getElementById('orderList');
+
+        if (Object.keys(cart).length === 0) {
+          orderList.innerHTML = '<div class="empty-message">Nenhum item selecionado</div>';
+          return;
+        }
+
+        orderList.innerHTML = '';
+        const sortedItems = Object.keys(cart).sort();
+
+        sortedItems.forEach(itemName => {
+          const item = allItems.find(i => i.name === itemName);
+          const quantity = cart[itemName];
+          const subtotal = item.price * quantity;
+
+          const row = document.createElement('div');
+          row.className = 'item-row';
+          row.innerHTML = `
+            <div class="item-info">
+              <div class="item-info-name">${itemName}</div>
+              <div class="item-info-details">${formatCurrency(item.price)} x ${quantity}</div>
+              <div class="item-info-price">${formatCurrency(subtotal)}</div>
+            </div>
+            <div class="quantity-controls">
+              <button class="btn-qty" data-action="minus" aria-label="Diminuir quantidade">−</button>
+              <div class="item-quantity">${quantity}</div>
+              <button class="btn-qty" data-action="plus" aria-label="Aumentar quantidade">+</button>
+            </div>
+          `;
+
+          const btnMinus = row.querySelector('[data-action="minus"]');
+          const btnPlus = row.querySelector('[data-action="plus"]');
+
+          btnMinus.onclick = () => removeItem(itemName);
+          btnPlus.onclick = () => addItem(itemName);
+
+          orderList.appendChild(row);
+        });
+      }
+
+      function render() {
+        document.getElementById('totalValue').textContent = formatCurrency(total);
+        renderCategories(document.getElementById('searchInput').value);
+        renderOrderList();
+      }
+
+      // Event listeners
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        renderCategories(e.target.value);
+      });
+
+      document.getElementById('clearAllBtn').addEventListener('click', clearCart);
+
+      // Evita zoom por toque duplo em alguns navegadores mobile.
+      document.addEventListener('dblclick', (event) => {
+        event.preventDefault();
+      }, { passive: false });
+
+      // Initial render
+      initializeItems();
+      renderCategories();
+      render();
+    </script>
+  </body>
+</html>
