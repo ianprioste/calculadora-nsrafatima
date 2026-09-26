@@ -3,7 +3,7 @@
   <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'>
-    <title>Calculadora - Nsra Fátima</title>
+    <title>Calculadora Festa da Primavera Nsra Fátima</title>
     <style>
       * {
         margin: 0;
@@ -145,6 +145,32 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border-color: #667eea;
+      }
+
+      .item-btn.unavailable {
+        border-color: #e53935;
+        background: #fff5f5;
+      }
+
+      .item-btn.unavailable .item-name,
+      .item-btn.unavailable .item-price {
+        color: #c62828;
+      }
+
+      .item-btn.unavailable.selected {
+        background: #fde7e7;
+        color: #c62828;
+        border-color: #e53935;
+      }
+
+      .item-btn.unavailable::after {
+        content: 'Indisponivel';
+        display: block;
+        margin-top: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #c62828;
+        text-transform: uppercase;
       }
 
       .item-btn.selected .item-price {
@@ -354,8 +380,8 @@
   <body>
     <div class="container">
       <header>
-        <h1>Calculadora</h1>
-        <div class="subtitle">Festa Junina - Nsra Fátima</div>
+        <h1>Calculadora Festa da Primavera</h1>
+        <div class="subtitle">Nsra Fátima</div>
         <div class="search-box">
           <input 
             type="text" 
@@ -383,53 +409,52 @@
       </aside>
     </div>
 
+    <script src="produtos-db.js"></script>
     <script>
-      const ITEMS_DATA = {
-        'Carga Inicial': [
-          { name: 'Carga Inicial', price: 5 }
-        ],
-        'Comidas Quentes': [
-          { name: 'Batata Frita', price: 12 },
-          { name: 'Caldo Verde', price: 18 },
-          { name: 'Cachorro Quente', price: 14 },
-          { name: 'Espetinho Carne', price: 18 },
-          { name: 'Espetinho Frango', price: 13 },
-          { name: 'Espetinho Kafta', price: 15 },
-          { name: 'Espetinho Linguiça', price: 15 },
-          { name: 'Guioza', price: 14 },
-          { name: 'Lanche Carne', price: 25 },
-          { name: 'Lanche Linguiça', price: 20 },
-          { name: 'Lanche Pernil', price: 25 },
-          { name: 'Macarronada Domingo', price: 30 },
-          { name: 'Mini Pizza', price: 15 },
-          { name: 'Pastel', price: 14 },
-          { name: 'Pinhão', price: 12 }
-        ],
-        'Doces e Sobremesas': [
-          { name: 'Arroz Doce ou Canjica', price: 12 },
-          { name: 'Brigadeiro Gourmet', price: 5 },
-          { name: 'Caixa Brigadeiro 4 unidades', price: 12 },
-          { name: 'Churros ou Doce de Abóbora', price: 12 },
-          { name: 'Curau ou Bolos', price: 12 },
-          { name: 'Morango com Chocolate', price: 15 }
-        ],
-        'Bebidas': [
-          { name: 'Água', price: 6 },
-          { name: 'Água c/ Gás', price: 7 },
-          { name: 'Café', price: 5 },
-          { name: 'Cerveja ou Vinho Quente', price: 12 },
-          { name: 'Garrafa Vinho', price: 65 },
-          { name: 'Quentão', price: 9 },
-          { name: 'Refrigerante', price: 10 },
-          { name: 'Suco Natural', price: 12 },
-          { name: 'Taça Vinho', price: 18 }
-        ],
-        'Diversão': [
-          { name: 'Bingo Cartela Especial', price: 15 },
-          { name: 'Bingo Cartela Simples', price: 8 },
-          { name: 'Brincaderas', price: 10 }
-        ]
-      };
+      const STORAGE_KEY = 'PRODUTOS_DB';
+      const API_URL = '/api/products';
+
+      async function loadItemsData() {
+        try {
+          const response = await fetch(`${API_URL}?t=${Date.now()}`, { cache: 'no-store' });
+          if (response.ok) {
+            const data = normalizeItemsData(await response.json());
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            return data;
+          }
+        } catch (error) {
+          console.warn('API indisponivel, usando fallback local.', error);
+        }
+
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          try {
+            return normalizeItemsData(JSON.parse(saved));
+          } catch (error) {
+            console.warn('Nao foi possivel ler PRODUTOS_DB do localStorage.', error);
+          }
+        }
+
+        return window.PRODUTOS_DB ? normalizeItemsData(JSON.parse(JSON.stringify(window.PRODUTOS_DB))) : {};
+      }
+
+      function normalizeItemsData(data) {
+        const normalized = {};
+
+        Object.entries(data || {}).forEach(([categoryName, items]) => {
+          normalized[categoryName] = Array.isArray(items)
+            ? items.map(item => ({
+                name: item.name,
+                price: item.price,
+                available: item.available !== false
+              }))
+            : [];
+        });
+
+        return normalized;
+      }
+
+      let ITEMS_DATA = {};
 
       let cart = {};
       let total = 0;
@@ -449,7 +474,7 @@
 
       function addItem(itemName) {
         const item = allItems.find(i => i.name === itemName);
-        if (!item) return;
+        if (!item || item.available === false) return;
 
         if (itemName === 'Carga Inicial') {
           if (!cart[itemName]) {
@@ -495,6 +520,7 @@
           cart = {};
           total = 0;
           render();
+          window.location.reload();
         }
       }
 
@@ -526,13 +552,23 @@
           filteredItems.forEach(item => {
             const quantity = cart[item.name] || 0;
             const btn = document.createElement('button');
+            const isUnavailable = item.available === false;
             btn.className = quantity > 0 ? 'item-btn selected' : 'item-btn';
-            btn.title = 'Toque e segure para zerar este item';
+            if (isUnavailable) {
+              btn.classList.add('unavailable');
+            }
+            btn.title = isUnavailable ? 'Item indisponivel' : 'Toque e segure para zerar este item';
             btn.innerHTML = `
               <span class="item-name">${item.name}</span>
               <span class="item-price">${formatCurrency(item.price)}</span>
               ${quantity > 0 ? `<span class="item-count-badge">${quantity}</span>` : ''}
             `;
+
+            if (isUnavailable) {
+              btn.disabled = true;
+              itemsGrid.appendChild(btn);
+              return;
+            }
 
             let longPressTimer = null;
             let longPressTriggered = false;
@@ -608,13 +644,13 @@
           row.innerHTML = `
             <div class="item-info">
               <div class="item-info-name">${itemName}</div>
-              <div class="item-info-details">${formatCurrency(item.price)} x ${quantity}</div>
+              <div class="item-info-details">${formatCurrency(item.price)} x ${quantity}${item.available === false ? ' • Indisponivel' : ''}</div>
               <div class="item-info-price">${formatCurrency(subtotal)}</div>
             </div>
             <div class="quantity-controls">
               <button class="btn-qty" data-action="minus" aria-label="Diminuir quantidade">−</button>
               <div class="item-quantity">${quantity}</div>
-              <button class="btn-qty" data-action="plus" aria-label="Aumentar quantidade">+</button>
+              <button class="btn-qty" data-action="plus" aria-label="Aumentar quantidade" ${item.available === false ? 'disabled' : ''}>+</button>
             </div>
           `;
 
@@ -646,10 +682,14 @@
         event.preventDefault();
       }, { passive: false });
 
-      // Initial render
-      initializeItems();
-      renderCategories();
-      render();
+      async function initializeApp() {
+        ITEMS_DATA = await loadItemsData();
+        initializeItems();
+        renderCategories();
+        render();
+      }
+
+      initializeApp();
     </script>
   </body>
 </html>
