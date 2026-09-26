@@ -1,4 +1,7 @@
 window.PRODUTOS_DB = {
+  "Carga Inicial": [
+    { "name": "Carga Inicial", "price": 5, "available": true }
+  ],
   "Almoço de Domingo": [
     { "name": "Macarronada", "price": 30, "available": true }
   ],
